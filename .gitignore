@@ -1,0 +1,12 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+render/dist/
+runs/
+.remotion/
+site/dist/
+site/public/tiles/
+site/public/search.json
+.DS_Store
