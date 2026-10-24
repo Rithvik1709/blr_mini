@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>tiny.blr</title>
+    <meta name="description" content="Bengaluru as one isometric map. Zoom from the whole city down to single streets, and find any place or metro station." />
+    <meta name="theme-color" content="#0c121c" />
+    <!-- before any stylesheet: a script waits for stylesheets above it -->
+    <!-- boot -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="map" aria-label="Map of Bengaluru"></div>
+
+    <div class="panel brand">
+      <span class="brand-name">tiny.blr</span>
+      <span class="brand-sub">Greater Bengaluru</span>
+    </div>
+
+    <button class="panel sky" hidden aria-label="Weather and time in Bengaluru. Turns sky effects on or off (T)">
+      <svg class="sky-icon" viewBox="0 0 14 14" aria-hidden="true"></svg>
+      <span class="sky-lines"><span class="sky-time"></span><span class="sky-text"></span></span>
+    </button>
+
+    <div class="search">
+      <div class="panel search-box">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1h4v1h1v1h1v4h-1v1h-1v1H6V8H5V7H4V3h1V2h1zm0 2v1H5v2h1v1h4V6h1V4h-1V3zm-2 6h2v1H5v1H4v1H3v1H2v-1H1v-1h1v-1h1V9z"/></svg>
+        <input id="search" type="search" placeholder="Search a place or metro station" autocomplete="off" spellcheck="false"
+          role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list" />
+      </div>
+      <ul id="results" class="panel results" role="listbox" hidden></ul>
+    </div>
+
+    <div class="controls">
+      <button class="panel btn" id="zoom-in" aria-label="Zoom in">+</button>
+      <button class="panel btn" id="zoom-out" aria-label="Zoom out">−</button>
+      <button class="panel btn" id="home" aria-label="Back to the start">⌂</button>
+      <button class="panel btn" id="settings-btn" aria-label="Layers and settings" aria-expanded="false" aria-controls="settings">
+        <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M6 0h2v2h1v1h1V2h2v2h-1v1h1v1h2v2h-2v1h-1v1h1v2h-2v-1H9v1H8v2H6v-2H5v-1H4v1H2v-2h1V9H2V8H0V6h2V5h1V4H2V2h2v1h1V2h1zm0 5v1H5v2h1v1h2V8h1V6H8V5z"/></svg>
+      </button>
+      <button class="panel btn wide" id="share">Share</button>
+    </div>
+
+    <div id="settings" class="panel settings" hidden>
+      <p class="settings-title">On the map</p>
+      <label><input type="checkbox" data-setting="minimap" /> Minimap <kbd>M</kbd></label>
+      <label><input type="checkbox" data-setting="metro" /> Namma Metro lines <kbd>L</kbd></label>
+      <label><input type="checkbox" data-setting="wards" /> GBA wards <kbd>W</kbd></label>
+      <label><input type="checkbox" data-setting="sky" /> Weather and time of day <kbd>T</kbd></label>
+    </div>
+
+    <div id="toast" class="panel toast" role="status" hidden></div>
+
+    <p class="credits">
+      Imagery © Google, Airbus · Photorealistic 3D Tiles via Cesium ion ·
+      Places © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+    </p>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
