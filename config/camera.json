@@ -1,0 +1,16 @@
+{
+  "name": "bengaluru",
+  "anchor": {
+    "lat": 12.9716,
+    "lon": 77.5946,
+    "height_m": 835.0
+  },
+  "azimuth_deg": -15.0,
+  "elevation_deg": -45.0,
+  "roll_deg": 0.0,
+  "metres_per_px": 0.293,
+  "shot_px": 2048,
+  "camera_distance_m": 30000.0,
+  "near_m": 1.0,
+  "far_m": 100000.0
+}
