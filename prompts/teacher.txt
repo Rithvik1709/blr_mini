@@ -1,0 +1,21 @@
+Redraw this image as isometric pixel art. The image is a render of a 3D city model seen from above at 45 degrees. Your drawing must cover exactly the same area, from exactly the same camera.
+
+FIDELITY COMES FIRST:
+1. Draw exactly what the render shows, in the same positions, shapes and sizes, seen from the same camera.
+2. Add nothing that is not in the render and remove nothing that is.
+3. Where the render shows little detail, keep the drawing just as plain. Little detail in the render means little detail in the drawing, never new objects.
+4. Keep the framing. Do not crop, zoom, rotate, flip or shift anything. Every edge of the drawing is the same edge of the render.
+
+HOW TO DRAW:
+- Clean hand-made pixel art: flat fills of colour, crisp one-pixel outlines a shade darker than the fill, and simple two- or three-tone shading with light from the top left.
+- A small, consistent palette. No gradients, no dithering noise, no blur and no photographic texture anywhere. Every surface is redrawn, never traced or filtered.
+- Roofs keep their real colours and shapes, simplified to flat planes. Walls facing the camera are a darker tone of the roof colour.
+- Tree canopies are rounded clumps with two or three greens and a darker outline. Bare ground, grass and paving are flat fills with sparse pixel texture.
+- Roads and paths are flat grey or tan with no markings unless they are large and clear in the render.
+- Leave out vehicles, people and anything smaller than a few pixels. Draw the road or ground under them instead.
+- The render sometimes has white or grey haze patches baked into the photo. They are not objects and not clouds: draw the ground under them as plainly as its surroundings.
+- No text, labels, borders, frames or signatures.
+
+{water}
+
+Return only the redrawn image, the same size and shape as the input.

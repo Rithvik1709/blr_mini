@@ -1,0 +1,31 @@
+{
+  "provider": "gemini",
+  "models": {
+    "gemini": "gemini-3-pro-image",
+    "openrouter": "google/gemini-3-pro-image"
+  },
+  "image_size": "1K",
+  "frame_px": 1024,
+  "max_attempts": 3,
+  "concurrency": 4,
+  "water": {
+    "srtm_to_ellipsoid_m": -65.0,
+    "allowed_dilate_px": 24,
+    "required_erode_px": 12
+  },
+  "checks": {
+    "flat_tolerance": 6,
+    "min_flat_share": 0.4,
+    "max_shift_px": 12,
+    "min_edge_corr": 0.35,
+    "max_invented_water_share": 0.002,
+    "min_water_component_px": 400,
+    "min_required_water_px": 4000,
+    "min_water_cover": 0.5
+  },
+  "usd_per_image": {
+    "gemini-3-pro-image": 0.135,
+    "google/gemini-3-pro-image": 0.135,
+    "gemini-nano-banana-2.1": 0.035
+  }
+}
