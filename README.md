@@ -46,6 +46,10 @@ bun run build && bun run preview                       # production build
 - `src/projection.js` is `camera.py` ported to JavaScript, and `tests/test_site.py` keeps the two identical.
 - Pixel art is drawn unsmoothed at 1:1 and closer, and smoothed when shown smaller.
 
+### Deploying
+
+`vercel.json` deploys `site/` only. Tile images are not in git (the version pointer, manifests and `search.json` are), so host `site/public/tiles/<version>/tiles_files/` somewhere built for many static files, such as Cloudflare R2 with CORS allowed for the site's domain, and set `TILE_BASE` in the build environment to its URL (the folder holding `<version>/tiles_files/`). Without `TILE_BASE`, tiles load from the site's own `/tiles`.
+
 ## Teacher: pixel-art targets
 
 ```bash

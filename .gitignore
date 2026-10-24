@@ -7,6 +7,6 @@ render/dist/
 runs/
 .remotion/
 site/dist/
-site/public/tiles/
-site/public/search.json
+# tile images are hosted elsewhere; the version pointer and manifests stay in git
+site/public/tiles/*/tiles_files/
 .DS_Store

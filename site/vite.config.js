@@ -13,7 +13,10 @@ function inlineBoot() {
     transformIndexHtml(html) {
       const { version } = JSON.parse(readFileSync(here("public/tiles/current.json"), "utf8"));
       const manifest = readFileSync(here(`public/tiles/${version}/manifest.json`), "utf8");
-      const site = readFileSync(here("site.config.json"), "utf8");
+      const site = JSON.parse(readFileSync(here("site.config.json"), "utf8"));
+      // where tile images are served from: this site's /tiles by default, or
+      // a bucket such as Cloudflare R2 (set TILE_BASE in the build environment)
+      site.tileBase = (process.env.TILE_BASE || "/tiles").replace(/\/+$/, "");
       const strip = (f) =>
         readFileSync(here(f), "utf8")
           .replace(/^import .*$/gm, "")
@@ -21,7 +24,7 @@ function inlineBoot() {
       const code = ["src/projection.js", "src/view.js", "src/boot.js"].map(strip).join("\n");
       const script =
         `<script>window.__MANIFEST=${JSON.stringify(JSON.parse(manifest))};` +
-        `window.__SITE=${JSON.stringify(JSON.parse(site))};` +
+        `window.__SITE=${JSON.stringify(site)};` +
         `(()=>{${code}})();</script>`;
       return html.replace("<!-- boot -->", script);
     },

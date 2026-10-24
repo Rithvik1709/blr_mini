@@ -50,7 +50,7 @@ export function createMinimap(viewer, M) {
 
   return {
     set(on) {
-      if (on && !img.src) img.src = `/tiles/${M.version}/tiles_files/${level}/0_0.webp`;
+      if (on && !img.src) img.src = `${window.__SITE.tileBase}/${M.version}/tiles_files/${level}/0_0.webp`;
       box.hidden = !on;
       update();
     },

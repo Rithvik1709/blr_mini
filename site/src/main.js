@@ -20,13 +20,15 @@ const viewer = OpenSeadragon({
   tileSources: {
     Image: {
       xmlns: "http://schemas.microsoft.com/deepzoom/2008",
-      Url: `/tiles/${M.version}/tiles_files/`,
+      Url: `${site.tileBase}/${M.version}/tiles_files/`,
       Format: M.format,
       Overlap: "0",
       TileSize: String(M.tileSize),
       Size: { Width: String(M.width), Height: String(M.height) },
     },
   },
+  // WebGL can only draw images from another origin (a tile bucket) with CORS
+  crossOriginPolicy: "Anonymous",
   showNavigationControl: false,
   drawer: "webgl",
   blendTime: 0,
