@@ -1,3 +1,4 @@
+import { inject } from '@vercel/analytics';
 import OpenSeadragon from "openseadragon";
 import "./style.css";
 import { makeCamera, project } from "./projection.js";
@@ -8,6 +9,9 @@ import { prefs } from "./overlay.js";
 import { kindLabel, loadIndex, search } from "./search.js";
 import { createSky } from "./sky.js";
 import { clampScale, formatHash, initialView, viewToLatLon } from "./view.js";
+
+// Initialize Vercel Web Analytics
+inject();
 
 const M = window.__MANIFEST;
 const site = window.__SITE;
