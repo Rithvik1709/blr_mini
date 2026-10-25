@@ -48,7 +48,7 @@ bun run build && bun run preview                       # production build
 
 ### Deploying
 
-`vercel.json` deploys `site/` only. Tile images are not in git (the version pointer, manifests and `search.json` are), so host `site/public/tiles/<version>/tiles_files/` somewhere built for many static files, such as Cloudflare R2 with CORS allowed for the site's domain, and set `TILE_BASE` in the build environment to its URL (the folder holding `<version>/tiles_files/`). Without `TILE_BASE`, tiles load from the site's own `/tiles`.
+`vercel.json` deploys `site/` only. Tile images are not in git (the version pointer, manifests and `search.json` are), so host `site/public/tiles/<version>/tiles_files/` somewhere built for many static files, such as a Backblaze B2 bucket with CORS allowed for the site's domain (see `docs/HANDOFF.md`), and set `TILE_BASE` in the build environment to its URL (the folder holding `<version>/tiles_files/`). Without `TILE_BASE`, tiles load from the site's own `/tiles`. If the build also has `B2_KEY_ID` and `B2_APPLICATION_KEY`, the bucket is treated as private and `site/api/tile-token.js` supplies a download token for the tile URLs.
 
 ## Teacher: pixel-art targets
 

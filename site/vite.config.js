@@ -15,8 +15,10 @@ function inlineBoot() {
       const manifest = readFileSync(here(`public/tiles/${version}/manifest.json`), "utf8");
       const site = JSON.parse(readFileSync(here("site.config.json"), "utf8"));
       // where tile images are served from: this site's /tiles by default, or
-      // a bucket such as Cloudflare R2 (set TILE_BASE in the build environment)
+      // a bucket such as Backblaze B2 (set TILE_BASE in the build environment)
       site.tileBase = (process.env.TILE_BASE || "/tiles").replace(/\/+$/, "");
+      // a private Backblaze B2 bucket: tile URLs carry a token from api/tile-token.js
+      site.tileToken = process.env.B2_KEY_ID ? "/api/tile-token" : "";
       const strip = (f) =>
         readFileSync(here(f), "utf8")
           .replace(/^import .*$/gm, "")

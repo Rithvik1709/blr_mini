@@ -13,20 +13,20 @@ const M = window.__MANIFEST;
 const site = window.__SITE;
 const cam = makeCamera(M.camera);
 const $ = (id) => document.getElementById(id);
+const tileQuery = await window.__tileQuery;
 
 const viewer = OpenSeadragon({
   element: $("map"),
-  // inline Deep Zoom descriptor: no tiles.dzi request before the first tile
-  tileSources: {
-    Image: {
-      xmlns: "http://schemas.microsoft.com/deepzoom/2008",
-      Url: `${site.tileBase}/${M.version}/tiles_files/`,
-      Format: M.format,
-      Overlap: "0",
-      TileSize: String(M.tileSize),
-      Size: { Width: String(M.width), Height: String(M.height) },
-    },
-  },
+  // Deep Zoom source built inline: no tiles.dzi request before the first tile
+  tileSources: new OpenSeadragon.DziTileSource({
+    width: M.width,
+    height: M.height,
+    tileSize: M.tileSize,
+    tileOverlap: 0,
+    tilesUrl: `${site.tileBase}/${M.version}/tiles_files/`,
+    fileFormat: M.format,
+    queryParams: tileQuery,
+  }),
   // WebGL can only draw images from another origin (a tile bucket) with CORS
   crossOriginPolicy: "Anonymous",
   showNavigationControl: false,
