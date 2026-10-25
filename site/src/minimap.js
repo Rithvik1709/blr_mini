@@ -3,7 +3,8 @@
 import OpenSeadragon from "openseadragon";
 import { onViewChange } from "./overlay.js";
 
-const MAX_PX = 168;
+// sharp at the column width on high-density screens
+const MAX_PX = 340;
 
 export function createMinimap(viewer, M) {
   // the largest pyramid level that fits, which is always a single tile
@@ -19,8 +20,8 @@ export function createMinimap(viewer, M) {
   box.setAttribute("role", "img");
   box.setAttribute("aria-label", "Minimap: click or drag to move the map");
   box.innerHTML = `<img alt="" width="${w}" height="${h}" draggable="false"><div class="minimap-view"></div>`;
-  box.style.width = `${w + 4}px`;
-  document.body.append(box);
+  // under the weather, in the top-right column, scaled to its width
+  (document.querySelector(".side") || document.body).append(box);
   const img = box.querySelector("img");
   const view = box.querySelector(".minimap-view");
 
@@ -29,9 +30,10 @@ export function createMinimap(viewer, M) {
     const b = viewer.viewport.viewportToImageRectangle(viewer.viewport.getBounds(true));
     const x0 = Math.max(0, b.x * f), y0 = Math.max(0, b.y * f);
     const x1 = Math.min(w, (b.x + b.width) * f), y1 = Math.min(h, (b.y + b.height) * f);
-    view.style.transform = `translate(${x0}px, ${y0}px)`;
-    view.style.width = `${Math.max(3, x1 - x0)}px`;
-    view.style.height = `${Math.max(3, y1 - y0)}px`;
+    const k = img.clientWidth / w || 1; // the image is drawn at the column's width, not its own
+    view.style.transform = `translate(${x0 * k}px, ${y0 * k}px)`;
+    view.style.width = `${Math.max(3, (x1 - x0) * k)}px`;
+    view.style.height = `${Math.max(3, (y1 - y0) * k)}px`;
   });
 
   function panTo(e) {

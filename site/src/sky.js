@@ -34,13 +34,14 @@ function phase(now, rise, set) {
   return ["Day", null];
 }
 
+const CLOUD = '<path d="M7 15h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.1 6.6 4.2 4.2 0 0 0 7 15z"/>';
 const ICONS = {
-  clear: '<path d="M6 1h2v2H6zM6 11h2v2H6zM1 6h2v2H1zM11 6h2v2h-2zM5 4h4v1h1v4H9v1H5V9H4V5h1z"/>',
-  night: '<path d="M5 2h3v1H6v1H5v4h1v1h1v1h4v1h-1v1H5v-1H4v-1H3V8H2V5h1V4h1V3h1z"/>',
-  cloud: '<path d="M5 4h3v1h1v1h2v1h1v3H1V8h1V7h1V5h2z"/>',
-  rain: '<path d="M5 2h3v1h1v1h2v1h1v3H1V6h1V5h1V3h2zM3 10h1v2H3zM6 10h1v2H6zM9 10h1v2H9z"/>',
-  storm: '<path d="M5 2h3v1h1v1h2v1h1v3H1V6h1V5h1V3h2zM6 9h2v1H7v1h2v1H8v1H6v-1h1v-1H5v-1h1z"/>',
-  fog: '<path d="M2 3h9v1H2zM3 6h9v1H3zM1 9h9v1H1zM4 12h7v1H4z"/>',
+  clear: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  night: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  cloud: '<path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.1 9.6 4.2 4.2 0 0 0 7 18z"/>',
+  rain: `${CLOUD}<path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"/>`,
+  storm: `${CLOUD}<path d="M12.5 15l-2 4h3l-2 4"/>`,
+  fog: '<path d="M4 8h13M6 12h14M3 16h13M7 20h10"/>',
 };
 
 const fmtTime = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
@@ -84,6 +85,16 @@ export function createSky(viewer) {
     widget.querySelector(".sky-time").textContent =
       fmtTime.format(now) + (data ? ` · ${Math.round(data.temp)}°C` : "");
     widget.querySelector(".sky-text").textContent = data ? `${label} · ${part}` : "Bengaluru";
+    const sun = widget.querySelector(".sun");
+    if (data) {
+      // 0 at sunrise, 1 at sunset; the dot rests at an end through the night
+      const t = Math.min(1, Math.max(0, (now - data.rise) / (data.set - data.rise)));
+      sun.style.setProperty("--sun", t.toFixed(3));
+      sun.classList.toggle("night", night);
+      sun.querySelector(".sun-rise").textContent = `↑ ${fmtTime.format(data.rise)}`;
+      sun.querySelector(".sun-set").textContent = `${fmtTime.format(data.set)} ↓`;
+      sun.hidden = false;
+    }
     widget.hidden = false;
 
     tint.style.background = on && colour ? colour : "transparent";

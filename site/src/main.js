@@ -1,6 +1,6 @@
 import OpenSeadragon from "openseadragon";
 import "./style.css";
-import { makeCamera } from "./projection.js";
+import { makeCamera, project } from "./projection.js";
 import { createClouds } from "./clouds.js";
 import { createLayers } from "./layers.js";
 import { createMinimap } from "./minimap.js";
@@ -86,13 +86,17 @@ viewer.addHandler("open", () => {
     item.removeHandler("fully-loaded-change", settle);
     item.immediateRender = false;
     viewer.forceRedraw();
-    // cloud data waits until the first view is complete
+    // cloud data and the place index wait until the first view is complete
     clouds.set(true);
+    hideIntro();
+    loadIndex().then(updateHere);
   };
   item.addHandler("fully-loaded-change", settle);
 });
 viewer.addHandler("zoom", updateSmoothing);
+viewer.addHandler("zoom", updateScale);
 viewer.addHandler("animation-finish", writeHash);
+viewer.addHandler("animation-finish", updateHere);
 window.addEventListener("hashchange", () => {
   if (!writingHash) goTo(initialView(M, site, cam, location.hash, window.innerWidth, window.innerHeight));
 });
@@ -127,9 +131,16 @@ document.addEventListener("keydown", (e) => {
   setSetting(key, !settings[key].get());
   toast(`${document.querySelector(`[data-setting="${key}"]`).parentElement.textContent.trim().slice(0, -2)} ${settings[key].get() ? "on" : "off"}`);
 });
-// OpenSeadragon pans on W/S by default; those keys are ours
+// OpenSeadragon pans on W/S by default; those keys are ours, and so is H
+const ACTIONS = { h: () => $("home").click() };
 viewer.addHandler("canvas-key", (e) => {
-  if (KEYS[e.originalEvent.key?.toLowerCase()]) e.preventDefaultAction = true;
+  const k = e.originalEvent.key?.toLowerCase();
+  if (KEYS[k] || ACTIONS[k]) e.preventDefaultAction = true;
+});
+document.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest("input")) return;
+  if (e.key === "?") openHelp();
+  else if (ACTIONS[e.key.toLowerCase()] && help.hidden) ACTIONS[e.key.toLowerCase()]();
 });
 
 const settingsBtn = $("settings-btn");
@@ -206,8 +217,10 @@ function render() {
   if (!results.length && input.value.trim()) {
     list.innerHTML = '<li class="empty">Nothing here by that name yet</li>';
   }
-  const open = input.value.trim() !== "" && document.activeElement === input;
+  const focused = document.activeElement === input;
+  const open = input.value.trim() !== "" && focused;
   list.hidden = !open;
+  explore.hidden = !(focused && !input.value.trim() && explore.querySelector(".chip"));
   input.setAttribute("aria-expanded", String(open));
   input.setAttribute("aria-activedescendant", active >= 0 ? `result-${active}` : "");
 }
@@ -215,6 +228,14 @@ function render() {
 function choose(i) {
   const r = results[i];
   if (!r) return;
+  flyTo(r);
+  input.value = r.n;
+  input.blur();
+  results = [];
+  render();
+}
+
+function flyTo(r) {
   const x = r.x - M.origin[0];
   const y = r.y - M.origin[1];
   if (pin) viewer.removeOverlay(pin);
@@ -226,13 +247,10 @@ function choose(i) {
     placement: OpenSeadragon.Placement.BOTTOM,
   });
   goTo({ x, y, scale: r.k === "area" ? 0.5 : 1 });
-  input.value = r.n;
-  input.blur();
-  results = [];
-  render();
 }
 
-input.addEventListener("focus", loadIndex, { once: true });
+input.addEventListener("focus", () => loadIndex().then(fillExplore), { once: true });
+input.addEventListener("focus", render);
 input.addEventListener("input", async () => {
   const q = input.value;
   const found = await search(q);
@@ -262,3 +280,134 @@ document.addEventListener("keydown", (e) => {
     input.focus();
   }
 });
+
+// --- explore: famous places, one tap away ---
+const explore = $("explore");
+const FAMOUS = [
+  ["Vidhana Soudha", "landmark"],
+  ["Cubbon Park", "park"],
+  ["Lalbagh Botanical Gardens", "park", "Lalbagh"],
+  ["Bangalore Palace", "landmark"],
+  ["Ulsoor Lake", "lake"],
+  ["M Chinnaswamy Stadium", "landmark", "Chinnaswamy Stadium"],
+  ["City Market", "landmark", "KR Market"],
+  ["UB City", "landmark"],
+  ["Sankey Tank", "lake"],
+  ["ISKCON Sri Radha Krishna-Chandra Temple", "landmark", "ISKCON Temple"],
+  ["Koramangala", "area"],
+  ["Hebbal Lake", "lake"],
+];
+
+async function fillExplore() {
+  const rows = await loadIndex();
+  const chips = explore.querySelector(".chips");
+  for (const [name, kind, label] of FAMOUS) {
+    const r = rows.find((row) => row.n === name && row.k === kind);
+    if (!r) continue;
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.innerHTML = `<span class="dot ${kind}"></span>`;
+    b.append(label || name);
+    b.onmousedown = (e) => e.preventDefault(); // keep the input focused until the click lands
+    b.onclick = () => {
+      flyTo(r);
+      input.blur();
+      render();
+    };
+    chips.append(b);
+  }
+  render();
+}
+
+// --- help ---
+const help = $("help");
+let helpReturn = null;
+function openHelp() {
+  helpReturn = document.activeElement;
+  help.hidden = false;
+  $("help-close").focus();
+}
+function closeHelp() {
+  help.hidden = true;
+  helpReturn?.focus?.();
+}
+$("help-btn").onclick = openHelp;
+$("help-close").onclick = closeHelp;
+help.addEventListener("click", (e) => e.target === help && closeHelp());
+help.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeHelp();
+  if (e.key === "Tab") e.preventDefault(); // one button: focus stays on it
+});
+
+// --- here: the neighbourhood at the centre of the view, and a scale bar ---
+const hereName = document.querySelector(".here-name");
+const hereSub = document.querySelector(".here-sub");
+const NEAR_KINDS = new Set(["landmark", "park", "lake", "metro"]);
+const CITY_NAME = /^(bengaluru|bangalore)\b/i;
+const fmtDeg = (v, pos, neg) => `${Math.abs(v).toFixed(3)}°${v >= 0 ? pos : neg}`;
+
+async function updateHere() {
+  const rows = await loadIndex();
+  const c = vp().viewportToImageCoordinates(vp().getCenter(true));
+  const [lat, lon] = viewToLatLon(M, cam, c.x, c.y);
+  const zoomedOut = imageScale() < 0.04;
+  let area = null, areaD = Infinity, near = null, nearD = Infinity;
+  for (const r of rows) {
+    const d = Math.hypot(r.x - M.origin[0] - c.x, r.y - M.origin[1] - c.y);
+    if (r.k === "area" && d < areaD && !CITY_NAME.test(r.n)) [area, areaD] = [r, d];
+    else if (NEAR_KINDS.has(r.k) && d < nearD && !CITY_NAME.test(r.n)) [near, nearD] = [r, d];
+  }
+  // an area name means little 2 km away, and nothing once the whole city is in view
+  const inArea = !zoomedOut && area && areaD < 7000;
+  hereName.textContent = inArea ? area.n : "Greater Bengaluru";
+  const alt = inArea ? area.a.find((a) => /[ಀ-೿]/.test(a)) : "ಬೆಂಗಳೂರು";
+  if (alt) {
+    const s = document.createElement("span");
+    s.className = "alt";
+    s.lang = "kn";
+    s.textContent = alt;
+    hereName.append(s);
+  }
+  const bits = [];
+  if (!zoomedOut && near && nearD < 2500 && near.n !== hereName.firstChild.textContent) bits.push(`near ${near.n}`);
+  bits.push(`${fmtDeg(lat, "N", "S")} ${fmtDeg(lon, "E", "W")}`);
+  hereSub.textContent = bits.join(" · ");
+}
+
+const NICE_M = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+const scaleBar = document.querySelector(".scalebar-bar");
+const scaleText = document.querySelector(".scalebar-text");
+function updateScale() {
+  // ground metres across one screen px, along the map's horizontal
+  const mPerPx = (M.camera.metres_per_px ?? 0.293) / imageScale();
+  const m = NICE_M.filter((n) => n / mPerPx <= 110).pop() ?? NICE_M[0];
+  scaleBar.style.width = `${Math.round(m / mPerPx)}px`;
+  scaleText.textContent = m >= 1000 ? `${m / 1000} km` : `${m} m`;
+}
+updateScale();
+
+// --- compass: the map is turned, so north is not straight up ---
+{
+  const { lat, lon } = site.home;
+  const [x0, y0] = project(cam, lat, lon, M.groundHeight);
+  const [x1, y1] = project(cam, lat + 0.01, lon, M.groundHeight);
+  const deg = (Math.atan2(x1 - x0, y0 - y1) * 180) / Math.PI;
+  document.querySelector(".compass .needle").setAttribute("transform", `rotate(${deg.toFixed(1)} 20 20)`);
+  // the N stays upright, just beyond the needle's tip
+  const r = (deg * Math.PI) / 180;
+  const n = document.querySelector(".compass .n");
+  n.setAttribute("x", (20 + Math.sin(r) * 15.5).toFixed(1));
+  n.setAttribute("y", (20 - Math.cos(r) * 15.5).toFixed(1));
+}
+
+// --- intro card: shown while the first view draws, at least briefly ---
+const intro = $("intro");
+const introShown = performance.now();
+function hideIntro() {
+  const wait = Math.max(0, 900 - (performance.now() - introShown));
+  setTimeout(() => {
+    intro.classList.add("gone");
+    setTimeout(() => intro.remove(), 700);
+  }, wait);
+}
+setTimeout(() => intro.isConnected && hideIntro(), 6000); // never block the map for long
