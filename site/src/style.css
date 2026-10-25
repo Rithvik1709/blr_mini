@@ -424,7 +424,25 @@ kbd {
 .keys div { display: flex; align-items: center; gap: 12px; }
 .keys dt { width: 64px; display: flex; gap: 4px; }
 .keys dd { margin: 0; }
-.help-card .btn { align-self: flex-end; }
+.help-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+
+/* follow on X: a pill in the free bottom-right corner, and a link in help */
+.follow { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-size: 13px; }
+.follow svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
+.follow:hover { color: #fff; }
+.help-card .follow { color: var(--muted); }
+.help-card .follow:hover { color: var(--text); }
+.follow-pill {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 14px);
+  height: 40px;
+  padding: 0 16px 0 14px;
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.follow-pill b { font-weight: 600; }
+.follow-pill:hover { background: var(--glass-hover); border-color: var(--edge-strong); }
 
 .toast {
   position: fixed;
@@ -469,6 +487,8 @@ kbd {
 
 /* mid widths: search moves under the brand row */
 @media (max-width: 1000px) {
+  .follow-pill span { display: none; }
+  .follow-pill { width: 40px; padding: 0; justify-content: center; }
   .search { position: fixed; left: var(--gutter); right: var(--gutter); top: calc(max(var(--gutter), env(safe-area-inset-top)) + 62px); transform: none; width: auto; max-width: 560px; }
   .toast { top: calc(max(var(--gutter), env(safe-area-inset-top)) + 126px); }
 }
@@ -486,6 +506,7 @@ kbd {
   .rail { top: auto; transform: none; bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 150px); }
   .settings { top: auto; transform: none; right: calc(var(--gutter) + 60px); bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 150px); min-width: 0; width: min(280px, calc(100vw - 2 * var(--gutter) - 60px)); }
   .here { width: calc(100vw - 2 * var(--gutter)); padding: 12px 14px; gap: 10px; }
+  .follow-pill { display: none; }
   .here-name { font-size: 18px; }
 }
 
