@@ -4,9 +4,17 @@
     "site": {
       "root": "site",
       "framework": "vite"
+    },
+    "api": {
+      "root": "site/api",
+      "entrypoint": "tile-token.js"
     }
   },
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": { "service": "api" }
+    },
     {
       "source": "/(.*)",
       "destination": { "service": "site" }
